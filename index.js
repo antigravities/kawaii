@@ -28,7 +28,8 @@ module.exports = function(email, password, certificate){
     protocol: Thrift.TCompactProtocol,
     path: "/S4",
     headers: {
-      "X-Line-Application": LineAppVersion // emulate winxp
+      "X-Line-Application": LineAppVersion, // emulate winxp
+      "Connection": "keep-alive"
     }
   });
 
@@ -78,7 +79,7 @@ module.exports = function(email, password, certificate){
       client.loginWithVerifierForCertificate(verifier, function(error, result){
         circ.emitter.emit("loggedOn", result.authToken, result.certificate);
         circ.authCode = result.authToken;
-        circ._wait();
+        circ._prepareWait();
       });
     } else {
       var client = Thrift.createHttpClient(TalkService, createConnection(Mockery.ofA("conn_opts").with("conn_initialsignon").fetch()));
@@ -86,7 +87,7 @@ module.exports = function(email, password, certificate){
         if( result && result.type == 1 ){
           circ.emitter.emit("loggedOn", result.authToken, certificate);
           circ.authCode = result.authToken;
-          circ._wait();
+          circ._prepareWait();
         } else {
           circ.emitter.emit("error", error.reason);
         }
@@ -103,16 +104,22 @@ module.exports = function(email, password, certificate){
     client.fetchOperations(circ.opRevision, 50, function(error, something){
       something.forEach(function(v,k){
         if( v.type != ttypes.OpType.END_OF_OPERATION ){
-          circ.emitter.emit("opRevision", v.revision, v);
+          circ.emitter.emit("opRevision", v.revision);
           circ.opRevision = v.revision;
-
-          if( v.type == ttypes.OpType.RECEIVE_MESSAGE){
-            circ.emitter.emit("messageReceived", v.message);
-          }
-        } else return;
+          if( v.type == ttypes.OpType.RECEIVE_MESSAGE) circ.emitter.emit("messageReceived", v.message);
+          else if( v.type == ttypes.OpType.NOTIFIED_ADD_CONTACT ) circ.emitter.emit("contactRequestReceived", v.param0);
+          else circ.emitter.emit("rawEvent", v);
+        } else {
+            circ.emitter.emit("endOpList");
+        }
       });
       circ._wait();
     });
+  }
+
+  this._prepareWait = function(){
+    this._wait();
+    setInterval(this._wait, 120000);
   }
 
   this.sendMessage = function(id, message, callback){
@@ -122,5 +129,13 @@ module.exports = function(email, password, certificate){
       if( error ) return circ.emitter.emit("error", error);
       if( callback ) callback(something);
     });
+  }
+
+  this.getContact = function(id, callback){
+      var client = Thrift.createHttpClient(TalkService, createConnection(Mockery.ofA("conn_opts").with("conn_authorized").fetch()));
+      client.getContact(id, function(error, result){
+        if( error ) return circ.emitter.emit("error", error);
+        callback(result);
+      });
   }
 }
