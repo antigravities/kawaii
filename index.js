@@ -54,7 +54,7 @@ module.exports = function(email, password, certificate){
   this._connect = function(email, password, certificate, verifier){
     if( ! certificate && ! verifier ){
       var client = Thrift.createHttpClient(TalkService, createConnection(Mockery.ofA("conn_opts").with("conn_initialsignon").fetch()));
-      client.loginWithIdentityCredentialForCertificate(ttypes.IdentityProvider.LINE, email, password, true, "127.0.0.1", "kawaii for LINE", "", function(error, result){
+      client.loginWithIdentityCredentialForCertificate(ttypes.IdentityProvider.LINE, email, password, true, "127.0.0.1", "kawaii", "", function(error, result){
         if( result ){
           if( result.type == 3 ){
             var vParam = result.verifier;
@@ -82,7 +82,7 @@ module.exports = function(email, password, certificate){
       });
     } else {
       var client = Thrift.createHttpClient(TalkService, createConnection(Mockery.ofA("conn_opts").with("conn_initialsignon").fetch()));
-      client.loginWithIdentityCredentialForCertificate(ttypes.IdentityProvider.LINE, email, password, true, "127.0.0.1", "kawaii for LINE", certificate, function(error, result){
+      client.loginWithIdentityCredentialForCertificate(ttypes.IdentityProvider.LINE, email, password, true, "127.0.0.1", "kawaii", certificate, function(error, result){
         if( result && result.type == 1 ){
           circ.emitter.emit("loggedOn", result.authToken, certificate);
           circ.authCode = result.authToken;
