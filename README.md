@@ -2,6 +2,17 @@
 
 Basic LINE client using unofficial Thrift API
 
+### WARNING
+kawaii-based clients have been banned in the past. As long as you aren't
+a moron (like me) and not straying too far from the protocol, you should be
+fine. However, you probably shouldn't link your main account and your
+bot's account just to be safe.
+
+I accept no responsibility for anything that happens to you for using
+kawaii. If you get banned, that's 100% your fault.
+
+That being said, have fun!
+
 ## Installing
 1. Install Apache Thrift from [here](http://thrift.apache.org/).
 2. Download line.thrift from [here](http://altrepo.eu/git/line-protocol/).
