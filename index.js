@@ -101,6 +101,10 @@ module.exports = function(email, password, certificate){
 
   this._wait = function(){
     var client = Thrift.createHttpClient(TalkService, createConnection(Mockery.ofA("conn_opts").with("conn_wait").with("conn_authorized").fetch()));
+    // DO NOT MODIFY THE MESSAGE COUNT THAT APPEARS ON THE FOLLOWING LINE
+    // If you do, you'll probably be banned. If you rely on endOpList, and
+    // are relying on >50 messages per session, don't. Hopefully I'll be
+    // fixing that in the near future.
     client.fetchOperations(circ.opRevision, 50, function(error, something){
       something.forEach(function(v,k){
         if( v.type != ttypes.OpType.END_OF_OPERATION ){
